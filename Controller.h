@@ -13,6 +13,7 @@ You should delete this comment.
 #define CONROLLER_H
 
 #include <string>
+#include <memory>
 
 // Forward declarations
 class Model;
@@ -54,10 +55,10 @@ private:
 	Point getCoords();
 	std::string getName();
 	double getSpeed();
-	Island* getIsland();
-	Ship* getShip();
+	std::shared_ptr<Island> getIsland();
+	std::shared_ptr<Ship> getShip();
 
-	Ship* current_ship;		// used to hold the ship pointer for ship commands
+	std::shared_ptr<Ship> current_ship;		// used to hold the ship pointer for ship commands
 };
 
 #endif

@@ -12,6 +12,7 @@
 using std::cout; using std::endl; using std::cin;
 using std::string;
 using std::map;
+using std::shared_ptr;
 
 typedef map<string, void(Controller::*)(View&)> fn_map;
 
@@ -25,8 +26,8 @@ Controller::~Controller() {
 
 void Controller::run() {
 	fn_map fMap;
-	View* main_view = new View();
-	g_Model_ptr->attach(main_view);
+	shared_ptr<View> main_view(new View);
+	Model::getInstance().attach(main_view);
 
 	fMap.insert(fn_map::value_type("default", &Controller::doViewDefault));
 	fMap.insert(fn_map::value_type("size", &Controller::doViewSize));
@@ -50,16 +51,16 @@ void Controller::run() {
 	while(true) {
 		try{
 			current_ship = nullptr;
-			cout << "\nTime " << g_Model_ptr->get_time() << ": Enter command: ";
+			cout << "\nTime " << Model::getInstance().get_time() << ": Enter command: ";
 			string first_word;
 			cin >> first_word;
 
 			fn_map::iterator it = fMap.end();
 			if(first_word == "quit") {
 				break;
-			} else if (g_Model_ptr->is_ship_present(first_word)) {
+			} else if (Model::getInstance().is_ship_present(first_word)) {
 				//the first word was a ship name, so use the second word
-				current_ship = g_Model_ptr->get_ship_ptr(first_word);
+				current_ship = Model::getInstance().get_ship_ptr(first_word);
 				string second_word;
 				cin >> second_word;
 				it = fMap.find(second_word);
@@ -80,8 +81,7 @@ void Controller::run() {
 		}
 	}
 
-	g_Model_ptr->detach(main_view);
-	delete main_view;
+	Model::getInstance().detach(main_view);
 	cout << "Done" << endl;
 }
 
@@ -127,11 +127,11 @@ void Controller::doViewShow(View &main_view) {
 }
 
 void Controller::doModelStatus(View &main_view) {
-	g_Model_ptr->describe();
+	Model::getInstance().describe();
 }
 
 void Controller::doModelGo(View &main_view) {
-	g_Model_ptr->update();
+	Model::getInstance().update();
 }
 
 void Controller::doModelCreate(View &main_view) {
@@ -139,7 +139,7 @@ void Controller::doModelCreate(View &main_view) {
 	cin >> name;
 	if(name.size() < 2) {
 		throw Error("Name is too short!");
-	} else if (g_Model_ptr->is_name_in_use(name)) {
+	} else if (Model::getInstance().is_name_in_use(name)) {
 		throw Error("Name is already in use!");
 	}
 
@@ -147,7 +147,7 @@ void Controller::doModelCreate(View &main_view) {
 	cin >> ship_type;
 
 	//add ship with this name, the read-in type, and read-in coordinates
-	g_Model_ptr->add_ship(create_ship(name, ship_type, getCoords()));
+	Model::getInstance().add_ship(shared_ptr<Ship>(create_ship(name, ship_type, getCoords())));
 
 }
 
@@ -156,7 +156,7 @@ string Controller::getName() {
 	cin >> name;
 	if(name.size() < 2) {
 		throw Error("Name is too short!");
-	} else if (g_Model_ptr->is_name_in_use(name)) {
+	} else if (Model::getInstance().is_name_in_use(name)) {
 		throw Error("Name is already in use!");
 	}
 
@@ -188,17 +188,17 @@ void Controller::doShipPosition(View &main_view) {
 }
 
 void Controller::doShipDestination(View &main_view) {
-	Island* destIsland = getIsland();
+	shared_ptr<Island> destIsland = getIsland();
 	double speed = getSpeed();
 	//get island pointer and retrieve location, set destination to location
 	current_ship->set_destination_position_and_speed(
 									destIsland->get_location(), speed);
 }
 
-Island* Controller::getIsland() {
+shared_ptr<Island> Controller::getIsland() {
 	string islandName;
 	cin >> islandName;
-	return g_Model_ptr->get_island_ptr(islandName);
+	return Model::getInstance().get_island_ptr(islandName);
 }
 
 void Controller::doShipLoadAt(View &main_view) {
@@ -217,10 +217,10 @@ void Controller::doShipAttack(View &main_view) {
 	current_ship->attack(getShip());
 }
 
-Ship* Controller::getShip() {
+shared_ptr<Ship> Controller::getShip() {
 	string shipName;
 	cin >> shipName;
-	return g_Model_ptr->get_ship_ptr(shipName);
+	return Model::getInstance().get_ship_ptr(shipName);
 }
 
 void Controller::doShipRefuel(View &main_view) {

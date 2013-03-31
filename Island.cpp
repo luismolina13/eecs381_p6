@@ -48,5 +48,5 @@ void Island::describe() const {
 }
 
 void Island::broadcast_current_state() {
-	g_Model_ptr->notify_location(get_name(), get_location());
+	Model::getInstance().notify_location(get_name(), get_location());
 }

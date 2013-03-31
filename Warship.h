@@ -15,10 +15,11 @@ You should delete this comment.
 */
 
 #include "Ship.h"
+#include <memory>
 
 enum WarshipState_e { ATTACKING, NOT_ATTACKING };
 
-class Warship : public Ship {
+class Warship : public Ship, public std::enable_shared_from_this<Warship> {
 
 public:
 	// initialize, then output constructor message
@@ -37,7 +38,7 @@ public:
 
 	// will	throw Error("Cannot attack!") if not Afloat
 	// will throw Error("Warship may not attack itself!") if supplied target is the same as this Warship
-	void attack(Ship* target_ptr_) override;
+	void attack(std::shared_ptr<Ship> target_ptr_) override;
 
 	// will throw Error("Was not attacking!") if not Attacking
 	void stop_attack() override;
@@ -57,11 +58,11 @@ protected:
 	bool target_in_range() const;
 
 	// get the target
-	Ship* get_target() const;
+	std::shared_ptr<Ship> get_target() const;
 
 private:
 	double firepower;
 	double maximum_range;
 	WarshipState_e warship_state;
-	Ship* target_ptr;
+	std::weak_ptr<Ship> target_ptr;
 };

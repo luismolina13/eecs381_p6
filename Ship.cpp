@@ -6,6 +6,7 @@
 #include <string>
 using std::cout; using std::endl;
 using std::string;
+using std::shared_ptr;
 
 Ship::Ship(const string& name_, Point position_, double fuel_capacity_, 
 		double maximum_speed_, double fuel_consumption_, int resistance_) :
@@ -57,24 +58,14 @@ bool Ship::is_docked() const {
 }
 
 bool Ship::is_afloat() const {
-	if(	ship_state == SINKING || 
-		ship_state == SUNK || 
-		ship_state == ON_THE_BOTTOM ) {
+	if(ship_state == SUNK) {
 		return false;
 	} else {
 		return true;
 	}
 }
 
-bool Ship::is_on_the_bottom() const {
-	if(ship_state == ON_THE_BOTTOM) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-bool Ship::can_dock(Island* island_ptr) const {
+bool Ship::can_dock(shared_ptr<Island> island_ptr) const {
 	if(ship_state == STOPPED && 
 		cartesian_distance(get_location(), island_ptr->get_location()) <= .1) {
 		return true;
@@ -86,28 +77,18 @@ bool Ship::can_dock(Island* island_ptr) const {
 void Ship::update() {
 	if(is_afloat()) {
 		if(resistance < 0) {
-			ship_state = SINKING;
-			cout << get_name() << " sinking" << endl;
+			ship_state = SUNK;
+			cout << get_name() << " sunk" << endl;
+			Model::getInstance().notify_gone(get_name());
 			return;
 		}
-	} 
-
-	if(ship_state == SINKING) {
-		ship_state = SUNK;
-		g_Model_ptr->notify_gone(get_name());
-		cout << get_name() << " sunk" << endl;
-	} else if(ship_state == SUNK) {
-		ship_state = ON_THE_BOTTOM;
-		cout << get_name() << " on the bottom" << endl;
-	} else if(ship_state == ON_THE_BOTTOM) {
-		cout << get_name() << " on the bottom" << endl;
 	} 
 
 	if(is_afloat()) { 
 		if(ship_state == MOVING_ON_COURSE || ship_state == MOVING_TO_POSITION) {
 			calculate_movement();
 			cout << get_name() << " now at " << get_location() << endl;
-			g_Model_ptr->notify_location(get_name(), get_location());
+			Model::getInstance().notify_location(get_name(), get_location());
 		} else if (ship_state == STOPPED) {
 			cout << get_name() << " stopped at " << get_location() << endl;
 		} else if (ship_state == DOCKED) {
@@ -121,14 +102,8 @@ void Ship::update() {
 void Ship::describe() const {
 	cout << get_name() << " at " << get_location();
 
-	if(ship_state == SINKING ) {
-		cout << " sinking" << endl;
-		return;
-	} else if(ship_state == SUNK ) {
+	if(ship_state == SUNK ) {
 		cout << " sunk" << endl;
-		return;
-	} else if(ship_state == ON_THE_BOTTOM ) {
-		cout << " on the bottom" << endl;
 		return;
 	}
 
@@ -149,7 +124,7 @@ void Ship::describe() const {
 }
 
 void Ship::broadcast_current_state() {
-	g_Model_ptr->notify_location(get_name(), get_location());
+	Model::getInstance().notify_location(get_name(), get_location());
 }
 
 void Ship::set_destination_position_and_speed(Point destination_position, double speed) {
@@ -189,7 +164,7 @@ void Ship::stop() {
 	cout << get_name() << " stopping at " << get_location() << endl;
 }
 
-void Ship::dock(Island * island_ptr) {
+void Ship::dock(shared_ptr<Island> island_ptr) {
 	if(!can_dock(island_ptr)) {
 		throw Error("Can't dock!");
 	}
@@ -197,7 +172,7 @@ void Ship::dock(Island * island_ptr) {
 	trackBase.set_position(island_ptr->get_location());
 	docked_island = island_ptr;
 	ship_state = DOCKED;
-	g_Model_ptr->notify_location(get_name(), get_location());
+	Model::getInstance().notify_location(get_name(), get_location());
 	cout << get_name() << " docked at " << island_ptr->get_name() << endl;
 }
 
@@ -217,15 +192,15 @@ void Ship::refuel() {
 
 }
 
-void Ship::set_load_destination(Island *) {
+void Ship::set_load_destination(shared_ptr<Island>) {
 	throw Error("Cannot load at a destination!");
 }
 
-void Ship::set_unload_destination(Island *) {
+void Ship::set_unload_destination(shared_ptr<Island>) {
 	throw Error("Cannot unload at a destination!");
 }
 
-void Ship::attack(Ship * in_target_ptr) {
+void Ship::attack(shared_ptr<Ship> in_target_ptr) {
 	throw Error("Cannot attack!");
 }
 
@@ -233,7 +208,7 @@ void Ship::stop_attack() {
 	throw Error("Cannot attack!");
 }
 
-void Ship::receive_hit(int hit_force, Ship* attacker_ptr) {
+void Ship::receive_hit(int hit_force, shared_ptr<Ship> attacker_ptr) {
 	resistance -= hit_force;
 	cout << get_name() << " hit with " << hit_force << ", resistance now " 
 		<< resistance << endl;

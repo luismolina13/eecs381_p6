@@ -11,6 +11,11 @@ using std::pair;
 using std::vector;
 using std::string;
 
+const int axes_interval_c = 3;
+const int default_size_c = 25;
+const double default_scale_c = 2.0;
+const double default_origin_c = -10;
+
 View::View() {
 	size = default_size_c;
 	scale = default_scale_c;

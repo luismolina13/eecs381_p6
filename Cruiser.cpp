@@ -1,6 +1,14 @@
 #include "Cruiser.h"
 #include <iostream>
 using std::cout; using std::endl;
+using std::shared_ptr;
+
+const double cruiser_fuel_capacity_c = 1000;
+const double cruiser_max_speed_c = 20;
+const double cruiser_fuel_consumption_c = 10;
+const int cruiser_resistance_c = 6;
+const int firepower_c = 3;
+const double attack_range_c = 15;
 
 Cruiser::Cruiser(const std::string& name_, Point position_) : 
 				Warship(name_, position_, cruiser_fuel_capacity_c, 
@@ -30,7 +38,7 @@ void Cruiser::describe() const {
 	Warship::describe();
 }
 
-void Cruiser::receive_hit(int hit_force, Ship* attacker_ptr) {
+void Cruiser::receive_hit(int hit_force, shared_ptr<Ship> attacker_ptr) {
 	Ship::receive_hit(hit_force, attacker_ptr);
 	if(!is_attacking()) {
 		Warship::attack(attacker_ptr);

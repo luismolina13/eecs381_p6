@@ -22,13 +22,7 @@ You should delete this comment.
 #define TANKER_H
 
 #include "Ship.h"
-
-#define TANKER_FUEL_CAPACITY 100.
-#define TANKER_MAX_SPEED 10.
-#define TANKER_FUEL_CONSUMPTION 2.
-#define TANKER_RESISTANCE 0
-#define CARGO_CAPACITY 1000.
-#define INITIAL_CARGO 0
+#include <memory>
 
 class Island;
 
@@ -52,8 +46,8 @@ public:
 	// if both cargo destination are already set, throw Error("Tanker has cargo destinations!").
 	// if they are the same, leave at the set values, and throw Error("Load and unload cargo destinations are the same!")
 	// if both destinations are now set, start the cargo cycle
-	void set_load_destination(Island*) override;
-	void set_unload_destination(Island*) override;
+	void set_load_destination(std::shared_ptr<Island>) override;
+	void set_unload_destination(std::shared_ptr<Island>) override;
 	
 	// when told to stop, clear the cargo destinations and stop
 	void stop() override;
@@ -62,11 +56,11 @@ public:
 	void describe() const override;
 
 private: 
-	double cargo_capacity;				// fuel cargo capacity
+	double cargo_capacity_c;				// fuel cargo capacity
 	double cargo;
 	TankerState_e tanker_state;			// state of the tanker
-	Island* load_destination;			// pointer to load destination island
-	Island* unload_destination;			// pointer to unload destination island
+	std::shared_ptr<Island> load_destination;			// pointer to load destination island
+	std::shared_ptr<Island> unload_destination;			// pointer to unload destination island
 
 	void set_load_unload_destination_state_changes();
 	void set_no_cargo_destinations();

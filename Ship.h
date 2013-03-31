@@ -27,11 +27,12 @@ You should delete this comment.
 
 #include "Sim_object.h"
 #include "Track_base.h"
+#include <memory>
 
 class Island;
 
 enum ShipState_e {	DOCKED, STOPPED, MOVING_TO_POSITION, MOVING_ON_COURSE, 
-						DEAD_IN_THE_WATER, SINKING, SUNK, ON_THE_BOTTOM};
+						DEAD_IN_THE_WATER, SUNK};
 
 class Ship: public Sim_object {
 
@@ -59,12 +60,9 @@ public:
 	
 	// Return true if ship is afloat (not in process of sinking), false if not
 	bool is_afloat() const;
-		
-	// Return true if ship is on the bottom
-	bool is_on_the_bottom() const;
 	
 	// Return true if Stopped and within 0.1 nm of the island
-	bool can_dock(Island* island_ptr) const;
+	bool can_dock(std::shared_ptr<Island> island_ptr) const;
 	
 	/*** Interface to derived classes ***/
 	// Update the state of the Ship
@@ -88,7 +86,7 @@ public:
 	virtual void stop();
 	// dock at an Island - set our position = Island's position, go into Docked state
      // may throw Error("Can't dock!");
-	virtual void dock(Island * island_ptr);
+	virtual void dock(std::shared_ptr<Island> island_ptr);
 	// Refuel - must already be docked at an island; fill takes as much as possible
      // may throw Error("Must be docked!");
 	virtual void refuel();
@@ -96,24 +94,24 @@ public:
 	/*** Fat interface command functions ***/
 	// These functions throw an Error exception for this class
     // will always throw Error("Cannot load at a destination!");
-	virtual void set_load_destination(Island *);
+	virtual void set_load_destination(std::shared_ptr<Island>);
     // will always throw Error("Cannot unload at a destination!");
-	virtual void set_unload_destination(Island *);
+	virtual void set_unload_destination(std::shared_ptr<Island>);
     // will always throw Error("Cannot attack!");
-	virtual void attack(Ship * in_target_ptr);
+	virtual void attack(std::shared_ptr<Ship> in_target_ptr);
     // will always throw Error("Cannot attack!");
 	virtual void stop_attack();
 
 	// interactions with other objects
 	// receive a hit from an attacker
-	virtual void receive_hit(int hit_force, Ship* attacker_ptr);
+	virtual void receive_hit(int hit_force, std::shared_ptr<Ship> attacker_ptr);
 		
 protected:
 	// future projects may need additional protected members
 
 	double get_maximum_speed() const { return maximum_speed; }
 	// return pointer to the Island currently docked at, or nullptr if not docked
-	Island* get_docked_Island() const { return docked_island; }
+	std::shared_ptr<Island> get_docked_Island() const { return docked_island; }
 
 private:
 	double fuel;						// Current amount of fuel
@@ -121,7 +119,7 @@ private:
 	double fuel_capacity;				// total capacity
 	double maximum_speed;				// in nm/unit time
 	int resistance;			
-	Island* docked_island;	
+	std::shared_ptr<Island> docked_island;	
 	Point destination;					// Current destination if any
 	ShipState_e ship_state;
 	Track_base trackBase;				// instead of private inheritance

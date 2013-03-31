@@ -16,19 +16,12 @@ If no protected members are shown, there must be none in your version.
 If any protected or private members are shown here, then your class must also have them and use them as intended.
 You should delete this comment.
 */
-
 #ifndef CRUISER_H
 #define CRUISER_H
 
 #include "Warship.h"
-#include "Ship.h" 
-
-const double cruiser_fuel_capacity_c = 1000;
-const double cruiser_max_speed_c = 20;
-const double cruiser_fuel_consumption_c = 10;
-const int cruiser_resistance_c = 6;
-const int firepower_c = 3;
-const double attack_range_c = 15;
+#include "Ship.h" //todo: needed?
+#include <memory>
 
 class Cruiser : public Warship {
 
@@ -40,7 +33,7 @@ public:
 
 	void update() override;
 	void describe() const override;
-    void receive_hit(int hit_force, Ship* attacker_ptr) override;
+    void receive_hit(int hit_force, std::shared_ptr<Ship> attacker_ptr) override;
 
 };
 

@@ -2,15 +2,17 @@
 #include "Tanker.h"
 #include "Cruiser.h"
 #include "Utility.h"
+#include <memory>
+using std::shared_ptr; using std::make_shared;
 
-Ship * create_ship(const std::string& name, const std::string& type, 
+shared_ptr<Ship> create_ship(const std::string& name, const std::string& type, 
 											Point initial_position) {
 
-	Ship* return_ptr;
+	shared_ptr<Ship> return_ptr;
 	if(type == "Tanker") {
-		return_ptr = new Tanker(name, initial_position);
+		return_ptr = make_shared<Tanker>(name, initial_position); //todo shared
 	} else if (type == "Cruiser") {
-		return_ptr = new Cruiser(name, initial_position);
+		return_ptr = make_shared<Cruiser>(name, initial_position); //todo shared
 	} else {
 		throw Error("Trying to create ship of unknown type!");
 	}

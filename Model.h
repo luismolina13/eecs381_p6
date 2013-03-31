@@ -26,10 +26,10 @@ You should delete this comment.
 #include <string>
 #include <map>
 #include <set>
+#include <memory>
 
 // Declare the global model pointer
 class Model;
-extern Model* g_Model_ptr;
 
 // Forward declarations
 class Sim_object;
@@ -38,13 +38,12 @@ class Ship;
 class View;
 
 class Model {
-public:
-	// create the initial objects, output constructor message
-	Model();
-	
-	// destroy all objects, output destructor message
-	~Model();
-
+public:	
+	//create the model if it doesn't already exist
+	static Model& getInstance() {
+		static Model model;
+		return model;
+	}
 	// return the current time
 	int get_time() {return time;}
 
@@ -55,16 +54,16 @@ public:
 	// is there such an island?
 	bool is_island_present(const std::string& name) const;
 	// add a new island to the lists
-	void add_island(Island*);
+	void add_island(std::shared_ptr<Island>);
 	// will throw Error("Island not found!") if no island of that name
-	Island* get_island_ptr(const std::string& name) const;
+	std::shared_ptr<Island> get_island_ptr(const std::string& name) const;
 
 	// is there such an ship?
 	bool is_ship_present(const std::string& name) const;
 	// add a new ship to the list, and update the view
-	void add_ship(Ship*);
+	void add_ship(std::shared_ptr<Ship>);
 	// will throw Error("Ship not found!") if no ship of that name
-	Ship* get_ship_ptr(const std::string& name) const;
+	std::shared_ptr<Ship> get_ship_ptr(const std::string& name) const;
 	
 	// tell all objects to describe themselves
 	void describe() const;
@@ -79,10 +78,10 @@ public:
 	/* View services */
 	// Attaching a View adds it to the container and causes it to be updated
     // with all current objects'location (or other state information.
-	void attach(View*);
+	void attach(std::shared_ptr<View>);
 	// Detach the View by discarding the supplied pointer from the container of Views
     // - no updates sent to it thereafter.
-	void detach(View*);
+	void detach(std::shared_ptr<View>);
 	
     // notify the views about an object's location
 	void notify_location(const std::string& name, Point location);
@@ -92,10 +91,16 @@ public:
 	
 private:
 	int time;										// the simulated time
-	std::map<std::string, Sim_object*> sim_objects;	// Sim_object* container
-	std::map<std::string, Island*> islands;			// Island* container
-	std::map<std::string, Ship*> ships;				// Ship* container
-	std::set<View*> views;							// View* container
+	std::map<std::string, std::shared_ptr<Sim_object>> sim_objects;	// shared_ptr<Sim_object> container
+	std::map<std::string, std::shared_ptr<Island>> islands;			// shared_ptr<Island> container
+	std::map<std::string, std::shared_ptr<Ship>> ships;			// shared_ptr<Ship> container
+	std::set<std::shared_ptr<View>> views;							// shared_ptr<View> container
+
+	// create the initial objects, output constructor message
+	// private for singleton pattern
+	Model();
+	// destroy all objects, output destructor message
+	~Model();
 
 	// disallow copy/move construction or assignment
 	Model(const Model&) = delete; 				// disallow copy construction

@@ -2,6 +2,7 @@
 #include "Utility.h"
 #include <iostream>
 using std::cout; using std::endl;
+using std::shared_ptr; using std::weak_ptr;
 
 Warship::Warship(const std::string& name_, Point position_, double fuel_capacity_, 
 		double maximum_speed_, double fuel_consumption_, int resistance_,
@@ -11,8 +12,8 @@ Warship::Warship(const std::string& name_, Point position_, double fuel_capacity
 		firepower(firepower_), maximum_range(maximum_range_) {
 	
 	warship_state = NOT_ATTACKING;
-	target_ptr = nullptr;
 	cout << "Warship " << get_name() << " constructed" << endl;
+	//target_ptr is automatically set to nothing/nullptr
 }
 
 Warship::~Warship() {
@@ -22,26 +23,34 @@ Warship::~Warship() {
 void Warship::update() {
 	Ship::update();
 	if(is_attacking()) {
-		if(!is_afloat() || !(target_ptr->is_afloat())) {
+		//todo: correct? (spec p.3 step 4)
+		shared_ptr<Ship> target_shared = target_ptr.lock(); //get shared from weak
+		if(!is_afloat() || !target_shared || !(target_shared->is_afloat())) {
 			stop_attack();
+			target_ptr.reset();
 		} else {
 			cout << get_name() << " is attacking " << endl;
 		}
 	}
 }
 
-void Warship::attack(Ship* target_ptr_) {
+void Warship::attack(shared_ptr<Ship> target_ptr_) {
 	if(!is_afloat()) {
 		throw Error("Cannot attack!");
 	}
 
-	if(target_ptr_ == this) { 
+	if(target_ptr_ == shared_from_this()) { //gets shared ptr to "this" object
 		throw Error("Warship may not attack itself!");
 	}
 
+	if(target_ptr.expired()) { //todo: correct?
+		return;
+	}
+	shared_ptr<Ship> target_shared = target_ptr.lock(); //get shared from weak
+
 	target_ptr = target_ptr_;
 	warship_state = ATTACKING;
-	cout << get_name() << " will attack " << target_ptr->get_name() << endl;
+	cout << get_name() << " will attack " << target_shared->get_name() << endl;
 }
 
 void Warship::stop_attack() {
@@ -49,14 +58,20 @@ void Warship::stop_attack() {
 		throw Error("Was not attacking!");
 	}
 	warship_state = NOT_ATTACKING;
-	target_ptr = nullptr;
+	target_ptr.reset();
 	cout << get_name() << " stopping attack" << endl;
 }
 
 void Warship::describe() const {
 	Ship::describe();
 	if(is_attacking()) {
-		cout << "Attacking " << target_ptr->get_name() << endl;
+		shared_ptr<Ship> target_shared = target_ptr.lock(); //get shared from weak
+		
+		if(!target_shared || !(target_shared->is_afloat())) {
+			cout << "Attacking absent ship" << endl;
+			return;
+		}
+		cout << "Attacking " << target_shared->get_name() << endl;
 	} 
 }
 
@@ -70,12 +85,23 @@ bool Warship::is_attacking() const {
 
 void Warship::fire_at_target() {
 	cout << get_name() << " fires" << endl;
-	target_ptr->receive_hit(firepower, this);
+	if(target_ptr.expired()) {
+		cout << "Attacking absent ship" << endl; //todo: correct?
+		return;
+	}
+	shared_ptr<Ship> target_shared = target_ptr.lock(); //get shared from weak
+
+	target_shared->receive_hit(firepower, shared_from_this());
 }
 
 bool Warship::target_in_range() const {
+	if(target_ptr.expired()) {
+		return false; //todo: correct?
+	}
+	shared_ptr<Ship> target_shared = target_ptr.lock(); //get shared from weak
+
 	double distance_to_target = cartesian_distance(get_location(), 
-												target_ptr->get_location());
+												target_shared->get_location());
 	if(distance_to_target <= maximum_range) {
 		return true;
 	} else {
@@ -83,6 +109,11 @@ bool Warship::target_in_range() const {
 	}
 }
 
-Ship* Warship::get_target() const {
-	return target_ptr;
+shared_ptr<Ship> Warship::get_target() const {
+	if(target_ptr.expired()) {
+		return shared_ptr<Ship>(nullptr); //todo: correct?
+	}
+	//todo shared : is it right to do this?
+	shared_ptr<Ship> target_shared = target_ptr.lock(); //get shared from weak
+	return target_shared;
 }

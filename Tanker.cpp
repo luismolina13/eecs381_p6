@@ -3,12 +3,19 @@
 #include "Utility.h"
 #include <iostream>
 using std::cout; using std::endl;
+using std::shared_ptr;
 
+const double tanker_fuel_capacity_c = 100.;
+const double tanker_max_speed_c = 10.;
+const double tanker_fuel_consumption_c = 2.;
+const int tanker_resistance_c = 0;
+const double cargo_capacity_c = 1000.;
+const int initial_cargo_c = 5;
 
 Tanker::Tanker(const std::string& name_, Point position_) : 
-				Ship(name_, position_, TANKER_FUEL_CAPACITY, TANKER_MAX_SPEED,
-					TANKER_FUEL_CONSUMPTION, TANKER_RESISTANCE), 
-				cargo(INITIAL_CARGO), cargo_capacity(CARGO_CAPACITY), 
+				Ship(name_, position_, tanker_fuel_capacity_c, tanker_max_speed_c,
+					tanker_fuel_consumption_c, tanker_resistance_c), 
+				cargo(initial_cargo_c), cargo_capacity_c(cargo_capacity_c), 
 				tanker_state(NO_CARGO_DESTINATIONS), load_destination(nullptr), 
 				unload_destination(nullptr){
 
@@ -29,7 +36,7 @@ void Tanker::set_course_and_speed(double course, double speed) {
 	Ship::set_course_and_speed(course, speed);
 }
 
-void Tanker::set_load_destination(Island* load_dest_in) {
+void Tanker::set_load_destination(shared_ptr<Island> load_dest_in) {
 	checkStateNoDests();
 	load_destination = load_dest_in;
 	if(load_destination == unload_destination) {
@@ -42,7 +49,7 @@ void Tanker::set_load_destination(Island* load_dest_in) {
 	}
 }
 
-void Tanker::set_unload_destination(Island* unload_dest_in) {
+void Tanker::set_unload_destination(shared_ptr<Island> unload_dest_in) {
 	checkStateNoDests();
 	unload_destination = unload_dest_in;
 	if(load_destination == unload_destination) {
@@ -121,9 +128,9 @@ void Tanker::update() {
 		}
 	} else if (tanker_state == LOADING) {
 		Ship::refuel();
-		double roomInCargo = cargo_capacity - cargo;
+		double roomInCargo = cargo_capacity_c - cargo;
 		if(roomInCargo < .005) {
-			cargo = cargo_capacity;
+			cargo = cargo_capacity_c;
 			Ship::set_destination_position_and_speed(unload_destination->get_location(), get_maximum_speed());
 			tanker_state = MOVING_TO_UNLOADING;
 		} else {

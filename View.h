@@ -33,16 +33,13 @@ You should delete this comment.
 #include <map>
 #include "Geometry.h"
 
-const int axes_interval_c = 3;
-const int default_size_c = 25;
-const double default_scale_c = 2.0;
-const double default_origin_c = -10;
-
 class View {
 public:
 	// default constructor sets the default size, scale, and origin, outputs constructor message
 	View(); 
 	~View();	// outputs destructor message
+
+	int check_exists() { return 1; }
 	
 	// Save the supplied name and location for future use in a draw() call
 	// If the name is already present,the new location replaces the previous one.
