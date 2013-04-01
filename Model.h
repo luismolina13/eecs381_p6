@@ -88,6 +88,15 @@ public:
 	// notify the views that an object is now gone
 	void notify_gone(const std::string& name);
 
+	/* services for island information */
+	// given a position, return a pointer to the island at that point
+	std::shared_ptr<Island> getIslandFromPosition(Point location);
+
+	/*	given a set of visited islands, find the one closest to the current
+		location that is not in the set */
+	std::shared_ptr<Island> getNearestIsland(Point location, 
+				std::set<std::shared_ptr<Island>> islandsTraveled);
+
 	
 private:
 	int time;										// the simulated time

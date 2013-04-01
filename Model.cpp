@@ -7,12 +7,14 @@
 #include <iostream>
 #include <utility>
 #include <algorithm>
+#include <limits>
 using std::cout; using std::endl;
 using std::map;
 using std::string;
 using std::pair;
 using std::set;
 using std::shared_ptr;
+using std::numeric_limits;
 
 /* create some islands and ships using the following code in the Model constructor.
 Do not change the execution order of these code fragments. You should delete this comment. */
@@ -162,4 +164,36 @@ void Model::notify_gone(const std::string& name) {
 	for(auto cur: views) {
 		cur->update_remove(name);			
 	}
+}
+
+std::shared_ptr<Island> Model::getIslandFromPosition(Point location) {
+	for(auto cur: islands) {
+		if(cur.second->get_location() == location) {
+			return cur.second;
+		}
+	}
+	throw Error("No Island found at given position");
+}
+
+std::shared_ptr<Island> Model::getNearestIsland(Point location, 
+				std::set<std::shared_ptr<Island>> islandSet) {
+	double min = numeric_limits<double>::max();
+	shared_ptr<Island> closest;
+	for(auto cur: islands) {
+		/*	if the distance between the current island and the given position
+			is less than the current min, and the current island is not among
+			the given set of island */
+		double dist = cartesian_distance(location, cur.second->get_location());
+		if(dist < min && 
+			islandSet.find(cur.second) == islandSet.end()) {
+			min = dist;
+			closest = cur.second;
+		}
+	}
+
+	if(closest == nullptr) {
+		throw Error("failed to find an island not in the set");
+	}
+
+	return closest;
 }
