@@ -1,6 +1,6 @@
 #include "Controller.h"
 #include "Model.h"
-#include "View.h"
+#include "Views.h"
 #include "Ship.h"
 #include "Island.h"
 #include "Geometry.h"

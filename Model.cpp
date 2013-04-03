@@ -2,7 +2,7 @@
 #include "Sim_object.h"
 #include "Island.h"
 #include "Ship.h"
-#include "View.h"
+#include "Views.h"
 #include "Utility.h"
 #include <iostream>
 #include <utility>
