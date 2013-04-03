@@ -20,11 +20,11 @@ View::View() {
 	size = default_size_c;
 	scale = default_scale_c;
 	origin = Point(default_origin_c, default_origin_c);
-	cout << "View constructed" << endl;
+	//cout << "View constructed" << endl;
 }
 
 View::~View() {
-	cout << "View destructed" << endl;
+	//cout << "View destructed" << endl;
 }
 
 void View::update_location(const std::string& name, Point location) {

@@ -56,7 +56,7 @@ public:
 	void describe() const override;
 
 private: 
-	double cargo_capacity_c;				// fuel cargo capacity
+	double cargo_capacity;				// fuel cargo capacity
 	double cargo;
 	TankerState_e tanker_state;			// state of the tanker
 	std::shared_ptr<Island> load_destination;			// pointer to load destination island

@@ -10,20 +10,20 @@ const double tanker_max_speed_c = 10.;
 const double tanker_fuel_consumption_c = 2.;
 const int tanker_resistance_c = 0;
 const double cargo_capacity_c = 1000.;
-const int initial_cargo_c = 5;
+const double initial_cargo_c = 0;
 
 Tanker::Tanker(const std::string& name_, Point position_) : 
 				Ship(name_, position_, tanker_fuel_capacity_c, tanker_max_speed_c,
 					tanker_fuel_consumption_c, tanker_resistance_c), 
-				cargo(initial_cargo_c), cargo_capacity_c(cargo_capacity_c), 
+				cargo(initial_cargo_c), cargo_capacity(cargo_capacity_c), 
 				tanker_state(NO_CARGO_DESTINATIONS), load_destination(nullptr), 
 				unload_destination(nullptr){
 
-	cout << "Tanker " <<  get_name() << " constructed" << endl;
+	//cout << "Tanker " <<  get_name() << " constructed" << endl;
 }
 
 Tanker::~Tanker() {
-	cout << "Tanker " << get_name() << " destructed" << endl;
+	//cout << "Tanker " << get_name() << " destructed" << endl;
 }
 
 void Tanker::set_destination_position_and_speed(Point destination, double speed) {

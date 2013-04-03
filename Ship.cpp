@@ -15,10 +15,11 @@ Ship::Ship(const string& name_, Point position_, double fuel_capacity_,
 		resistance(resistance_) {
 
 	trackBase.set_speed(0.);
+	trackBase.set_position(position_);
 	fuel = fuel_capacity;
 	docked_island = nullptr;
 	ship_state = STOPPED;
-	cout << "Ship " << get_name() << " constructed" << endl;
+	//cout << "Ship " << get_name() << " constructed" << endl;
 }
 
 /*
@@ -30,7 +31,7 @@ are defining it just to get the destructor message output.
 */
 Ship::~Ship()
 {
-	cout << "Ship "  << get_name() << " destructed" << endl;
+	//cout << "Ship "  << get_name() << " destructed" << endl;
 }
 	
 bool Ship::can_move() const {

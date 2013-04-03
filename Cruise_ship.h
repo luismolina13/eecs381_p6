@@ -31,10 +31,14 @@ public:
 private:
 	std::set<std::shared_ptr<Island>> islandsTraveled;
 	std::shared_ptr<Island> cruise_start;
-	CruiseState_e cruise_state;
 	std::shared_ptr<Island> next_destination;
+	CruiseState_e cruise_state;
+	double cruise_speed;
+	bool cruise_over;
 
 	void cancelCruise();
+	void set_no_cruise_destinations();
+	bool is_cruise_over();
 
 };
 

@@ -25,6 +25,7 @@ Model::Model() {
 	shared_ptr<Island> i1(new Island("Exxon", Point(10, 10), 1000, 200));
 	shared_ptr<Island> i2(new Island("Shell", Point(0, 30), 1000, 200));
 	shared_ptr<Island> i3(new Island("Bermuda", Point(20, 20)));
+	shared_ptr<Island> i4(new Island("Treasure_Island", Point(50, 5), 100, 5));
 	shared_ptr<Ship> s1 = create_ship("Ajax", "Cruiser", Point (15, 15));
 	shared_ptr<Ship> s2 = create_ship("Xerxes", "Cruiser", Point (25, 25));
 	shared_ptr<Ship> s3 = create_ship("Valdez", "Tanker", Point (30, 30));
@@ -33,6 +34,7 @@ Model::Model() {
 	islands.insert(pair<string, shared_ptr<Island>>(i1->get_name(), i1));
 	islands.insert(pair<string, shared_ptr<Island>>(i2->get_name(), i2));
 	islands.insert(pair<string, shared_ptr<Island>>(i3->get_name(), i3));
+	islands.insert(pair<string, shared_ptr<Island>>(i4->get_name(), i4));
 
 	ships.insert(pair<string, shared_ptr<Ship>>(s1->get_name(), s1));
 	ships.insert(pair<string, shared_ptr<Ship>>(s2->get_name(), s2));
@@ -41,18 +43,19 @@ Model::Model() {
 	sim_objects.insert(pair<string, shared_ptr<Sim_object>>(i1->get_name(), i1));
 	sim_objects.insert(pair<string, shared_ptr<Sim_object>>(i2->get_name(), i2));
 	sim_objects.insert(pair<string, shared_ptr<Sim_object>>(i3->get_name(), i3));
+	sim_objects.insert(pair<string, shared_ptr<Sim_object>>(i4->get_name(), i4));
 	sim_objects.insert(pair<string, shared_ptr<Sim_object>>(s1->get_name(), s1));
 	sim_objects.insert(pair<string, shared_ptr<Sim_object>>(s2->get_name(), s2));
 	sim_objects.insert(pair<string, shared_ptr<Sim_object>>(s3->get_name(), s3));
 	
-	cout << "Model constructed" << endl;
+	//cout << "Model constructed" << endl;
 }
 
 Model::~Model() {
 	for(auto cur: sim_objects) {
 		//delete cur.second;
 	}
-	cout << "Model destructed" << endl;
+	//cout << "Model destructed" << endl;
 }
 
 bool Model::is_name_in_use(const std::string& name) const {
@@ -142,9 +145,7 @@ void Model::update() {
 }
 
 void Model::attach(shared_ptr<View> new_view) {
-	cout << "functional if 1: " << new_view->check_exists() << endl;
 	views.insert(new_view);
-	cout << "functional if 1 (after): " << new_view->check_exists() << endl;
 	for(auto cur: sim_objects) {
 		cur.second->broadcast_current_state();
 	}
@@ -192,7 +193,7 @@ std::shared_ptr<Island> Model::getNearestIsland(Point location,
 	}
 
 	if(closest == nullptr) {
-		throw Error("failed to find an island not in the set");
+		throw Error("set_done error");
 	}
 
 	return closest;

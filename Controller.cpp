@@ -17,11 +17,11 @@ using std::shared_ptr;
 typedef map<string, void(Controller::*)(View&)> fn_map;
 
 Controller::Controller() {
-	cout << "Controller constructed" << endl;
+	//cout << "Controller constructed" << endl;
 }
 
 Controller::~Controller() {
-	cout << "Controller destructed" << endl;
+	//cout << "Controller destructed" << endl;
 }
 
 void Controller::run() {

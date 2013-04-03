@@ -14,11 +14,11 @@ Cruiser::Cruiser(const std::string& name_, Point position_) :
 				Warship(name_, position_, cruiser_fuel_capacity_c, 
 					cruiser_max_speed_c, cruiser_fuel_consumption_c, 
 					cruiser_resistance_c, firepower_c, attack_range_c) {
-	cout << "Cruiser " << get_name() << " constructed" << endl;
+	//cout << "Cruiser " << get_name() << " constructed" << endl;
 }
 
 Cruiser::~Cruiser() {
-	cout << "Cruiser " << get_name() << " destructed" << endl;
+	//cout << "Cruiser " << get_name() << " destructed" << endl;
 }
 
 void Cruiser::update() {

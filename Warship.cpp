@@ -12,12 +12,12 @@ Warship::Warship(const std::string& name_, Point position_, double fuel_capacity
 		firepower(firepower_), maximum_range(maximum_range_) {
 	
 	warship_state = NOT_ATTACKING;
-	cout << "Warship " << get_name() << " constructed" << endl;
+	//cout << "Warship " << get_name() << " constructed" << endl;
 	//target_ptr is automatically set to nothing/nullptr
 }
 
 Warship::~Warship() {
-	cout << "Warship "  << get_name() << " destructed" << endl;
+	//cout << "Warship "  << get_name() << " destructed" << endl;
 }
 
 void Warship::update() {
@@ -43,14 +43,9 @@ void Warship::attack(shared_ptr<Ship> target_ptr_) {
 		throw Error("Warship may not attack itself!");
 	}
 
-	if(target_ptr.expired()) { //todo: correct?
-		return;
-	}
-	shared_ptr<Ship> target_shared = target_ptr.lock(); //get shared from weak
-
 	target_ptr = target_ptr_;
 	warship_state = ATTACKING;
-	cout << get_name() << " will attack " << target_shared->get_name() << endl;
+	cout << get_name() << " will attack " << target_ptr_->get_name() << endl;
 }
 
 void Warship::stop_attack() {

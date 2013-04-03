@@ -13,11 +13,11 @@ class Sim_object {
 public:
 	Sim_object(const std::string& name_) : 
 		name(name_)
-		{std::cout << "Sim_object " << name << " constructed" << std::endl;}
+		{}//std::cout << "Sim_object " << name << " constructed" << std::endl;}
 
 	// *** declare the destructor appropriately and use the following function body
 	virtual ~Sim_object()
-		{std::cout << "Sim_object " << name << " destructed" << std::endl;}
+		{}//std::cout << "Sim_object " << name << " destructed" << std::endl;}
 		
 	const std::string& get_name() const
 		{return name;}
