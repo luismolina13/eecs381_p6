@@ -20,8 +20,9 @@ You should delete this comment.
 #define CRUISER_H
 
 #include "Warship.h"
-#include "Ship.h" //todo: needed?
 #include <memory>
+
+class Ship;
 
 class Cruiser : public Warship {
 

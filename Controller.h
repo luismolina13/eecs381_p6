@@ -65,6 +65,7 @@ private:
 	double getSpeed();
 	std::shared_ptr<Island> getIsland();
 	std::shared_ptr<Ship> getShip();
+	void removeFromViewsList(std::shared_ptr<View>, Views_container& views);
 
 	std::shared_ptr<Ship> current_ship;		// used to hold the ship pointer for ship commands
 };

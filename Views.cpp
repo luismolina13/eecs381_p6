@@ -1,8 +1,8 @@
 #include "Views.h"
 #include "Utility.h"
-#include "Sim_object.h" //todo: avoidable?
-#include "Model.h" //todo: avoidable?
-#include "Ship.h" //todo; avoidable?
+#include "Sim_object.h"
+#include "Model.h"
+#include "Ship.h"
 #include <iostream>
 #include <iomanip>
 #include <ios>
@@ -184,7 +184,12 @@ bool Map_view::get_subscripts(int &ix, int &iy, Point location)
 /*---------------------------- DATA VIEW CLASS ----------------------------*/
 
 void Data_view::update(const std::string& name) {
-	ships[name] = Model::getInstance().get_data_from_ship(name);
+	try{
+		ShipData sd = Model::getInstance().get_data_from_ship(name);
+		ships[name] = sd;
+	} catch(Error& e) {
+		//update by island, no action needed for data view
+	}
 }
 
 void Data_view::update_remove(const std::string& name) {
@@ -192,12 +197,18 @@ void Data_view::update_remove(const std::string& name) {
 }
 
 void Data_view::draw() {
+	double not_moving_speed = 0;
 	cout << "----- Sailing Data -----" << endl;
 	cout << setw(10) << "Ship" << setw(10) << "Fuel" << setw(10) << "Course" 
 		<< setw(10) << "Speed" << endl;
 	for(auto cur: ships) {
 		cout << setw(10) << cur.first << setw(10) << cur.second.fuel << setw(10) <<  
 			cur.second.course << setw(10) << cur.second.speed << endl;
+		//if(Model::getInstance().get_ship_ptr(cur.first)->is_moving()) {
+		//	cout << setw(10) << cur.second.speed << endl;
+		//} else {
+		//	cout << setw(10) << not_moving_speed << endl;
+		//}
 	}
 }
 
@@ -234,11 +245,11 @@ void Bridge_view::draw() {
 	for(auto cur: locations) { 
 		//for each location in the list
 		Compass_position cp(ownship->get_location(), cur.second);
-		if(cp.range < 20 && cp.range > 005) { //if it is in sight
-			int coords = get_coordinates_from_bearing(cp.bearing);
+		if(cp.range < 20 && cp.range > .005) { //if it is in sight
+			int coords = get_coordinates_from_bearing(cp.bearing - ownship->get_ship_course());
 			//if the returned bearing is within our forward field of vision
-			if(coords >= 0 && coords <= 18) {
-				string& point = matrix[2][coords];
+			if(coords >= 0 && coords <= 180) {
+				string& point = matrix[2][coords/10];
 				//print the appropriate information on the matrix
 				if(point == ". ") {
 					point = cur.first.substr(0, 2);
@@ -273,7 +284,7 @@ int Bridge_view::get_coordinates_from_bearing(double bearing) {
 	}
 
 	//add 90 to make values from -90 to positive 90 fall within the range 0-18 inclusive
-	return (bearing + 90)/10;
+	return (bearing + 90);
 
 }
 

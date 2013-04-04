@@ -23,7 +23,6 @@ Warship::~Warship() {
 void Warship::update() {
 	Ship::update();
 	if(is_attacking()) {
-		//todo: correct? (spec p.3 step 4)
 		shared_ptr<Ship> target_shared = target_ptr.lock(); //get shared from weak
 		if(!is_afloat() || !target_shared || !(target_shared->is_afloat())) {
 			stop_attack();
@@ -81,7 +80,7 @@ bool Warship::is_attacking() const {
 void Warship::fire_at_target() {
 	cout << get_name() << " fires" << endl;
 	if(target_ptr.expired()) {
-		cout << "Attacking absent ship" << endl; //todo: correct?
+		cout << "Attacking absent ship" << endl;
 		return;
 	}
 	shared_ptr<Ship> target_shared = target_ptr.lock(); //get shared from weak
@@ -91,7 +90,7 @@ void Warship::fire_at_target() {
 
 bool Warship::target_in_range() const {
 	if(target_ptr.expired()) {
-		return false; //todo: correct?
+		return false;
 	}
 	shared_ptr<Ship> target_shared = target_ptr.lock(); //get shared from weak
 
@@ -106,9 +105,9 @@ bool Warship::target_in_range() const {
 
 shared_ptr<Ship> Warship::get_target() const {
 	if(target_ptr.expired()) {
-		return shared_ptr<Ship>(nullptr); //todo: correct?
+		return shared_ptr<Ship>(nullptr);
 	}
-	//todo shared : is it right to do this?
+	
 	shared_ptr<Ship> target_shared = target_ptr.lock(); //get shared from weak
 	return target_shared;
 }

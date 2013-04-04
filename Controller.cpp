@@ -8,19 +8,22 @@
 #include "Utility.h"
 #include <map>
 #include <utility>
+#include <vector>
 #include <string>
 #include <memory>
 using std::cout; using std::endl; using std::cin;
 using std::string;
-using std::map;
+using std::map; using std::vector; using std::pair;
 using std::shared_ptr; using std::make_shared;
 
 typedef map<string, shared_ptr<Bridge_view>> bridge_view_map_t;
+typedef vector<shared_ptr<View>> views_list_t;
 
 struct Views_container {
 	shared_ptr<Map_view> map_view;
 	shared_ptr<Data_view> data_view;
 	bridge_view_map_t bridge_views;
+	views_list_t views_list;
 };
 
 typedef map<string, void(Controller::*)(Views_container&)> fn_map;
@@ -101,20 +104,29 @@ void Controller::run() {
 }
 
 void Controller::doViewDefault(Views_container &views) {
+	if(views.map_view == nullptr)
+		throw Error("Map view is not open!");
+
 	views.map_view->set_defaults();
 }
 
 void Controller::doViewSize(Views_container &views) {
 	int size;
 	cin >> size;
-	if(!cin) {
+	if(!cin) { 
 		throw Error("Expected an integer!");
 	}
+	if(!views.map_view)
+		throw Error("Map view is not open!");
+
 	views.map_view->set_size(size);
 }
 
 void Controller::doViewZoom(Views_container &views) {
 	double zoom = getDouble();
+	if(!views.map_view)
+		throw Error("Map view is not open!");
+
 	views.map_view->set_scale(zoom);
 }
 
@@ -128,6 +140,9 @@ double Controller::getDouble() {
 }
 
 void Controller::doViewPan(Views_container &views) {
+	if(!views.map_view)
+		throw Error("Map view is not open!");
+
 	views.map_view->set_origin(getCoords());
 }
 
@@ -138,14 +153,8 @@ Point Controller::getCoords() {
 }
 
 void Controller::doViewShow(Views_container &views) {
-	if(views.map_view) {
-		views.map_view->draw();
-	}
-	if(views.data_view) {
-		views.data_view->draw();
-	}
-	for(auto cur: views.bridge_views) {
-		cur.second->draw();
+	for(auto cur: views.views_list) {
+		cur->draw();
 	}
 }
 
@@ -264,6 +273,7 @@ void Controller::doOpenMap(Views_container &views) {
 	}
 	views.map_view = make_shared<Map_view>();
 	Model::getInstance().attach(views.map_view);
+	views.views_list.push_back(views.map_view);
 }
 
 void Controller::doCloseMap(Views_container& views) {
@@ -272,7 +282,7 @@ void Controller::doCloseMap(Views_container& views) {
 	}
 	Model::getInstance().detach(views.map_view);
 	views.map_view = nullptr;
-
+	removeFromViewsList(views.map_view, views);
 }
 
 void Controller::doOpenSailing(Views_container &views) {
@@ -281,6 +291,7 @@ void Controller::doOpenSailing(Views_container &views) {
 	}
 	views.data_view = make_shared<Data_view>();
 	Model::getInstance().attach(views.data_view);
+	views.views_list.push_back(views.data_view);
 }
 
 void Controller::doCloseSailing(Views_container& views) {
@@ -289,6 +300,7 @@ void Controller::doCloseSailing(Views_container& views) {
 	}
 	Model::getInstance().detach(views.data_view);
 	views.data_view = nullptr;
+	removeFromViewsList(views.data_view, views);
 }
 
 void Controller::doOpenBridge(Views_container &views) {
@@ -300,6 +312,7 @@ void Controller::doOpenBridge(Views_container &views) {
 	shared_ptr<Bridge_view> new_view = make_shared<Bridge_view>(ship);
 	views.bridge_views.insert(bridge_view_map_t::value_type(name, new_view));
 	Model::getInstance().attach(new_view);
+	views.views_list.push_back(new_view);
 }
 
 void Controller::doCloseBridge(Views_container& views) {
@@ -310,5 +323,16 @@ void Controller::doCloseBridge(Views_container& views) {
 		throw Error("Bridge view for that ship is not open!");
 	}
 	Model::getInstance().detach(it->second);
+	removeFromViewsList(views.bridge_views.find(name)->second, views);
 	views.bridge_views.erase(name);
+}
+
+void Controller::removeFromViewsList(shared_ptr<View> del, Views_container& views) {
+	for(views_list_t::iterator it = views.views_list.begin(); it != views.views_list.end(); it++) {
+		if(*it == del) {
+			views.views_list.erase(it);
+			return;
+		}
+	}
+	throw Error("Given view not found in views list");
 }

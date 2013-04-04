@@ -96,6 +96,7 @@ void Ship::update() {
 			cout << get_name() << " docked at " << docked_island->get_name() << endl;
 		} else if (ship_state == DEAD_IN_THE_WATER) {
 			cout << get_name() << " dead in the water at " << get_location() << endl;
+			broadcast_current_state();
 		}
 	}
 }
@@ -129,8 +130,7 @@ void Ship::broadcast_current_state() {
 }
 
 ShipData Ship::get_ship_data() {
-	ShipData sd = {fuel, trackBase.get_course_speed().course, 
-							trackBase.get_course_speed().speed};
+	ShipData sd = {fuel, trackBase.get_course(),trackBase.get_speed()};
 	return sd;
 }
 
@@ -169,6 +169,7 @@ void Ship::stop() {
 	trackBase.set_speed(0);
 	ship_state = STOPPED;
 	cout << get_name() << " stopping at " << get_location() << endl;
+	broadcast_current_state();
 }
 
 void Ship::dock(shared_ptr<Island> island_ptr) {
@@ -270,6 +271,7 @@ void Ship::calculate_movement()
 		fuel -= fuel_required;
 		trackBase.set_speed(0.);
 		ship_state = STOPPED;
+		broadcast_current_state();
 		}
 	else {
 		// go as far as we can, stay in the same movement state
@@ -279,6 +281,7 @@ void Ship::calculate_movement()
 		if(full_fuel_required >= fuel) {
 			fuel = 0.0;
 			ship_state = DEAD_IN_THE_WATER;
+			broadcast_current_state();
 			}
 		else {
 			fuel -= full_fuel_required;

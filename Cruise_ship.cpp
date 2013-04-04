@@ -85,7 +85,7 @@ void Cruise_ship::describe() const {
 }
 
 void Cruise_ship::set_destination_position_and_speed(Point destination_position, double speed) {
-	bool cancelMsg = false; //todo: kludgey
+	bool cancelMsg = false; 
 	if(cruise_state != NO_CRUISE_DESTINATIONS) {
 		cancelCruise();
 		cancelMsg = true;
@@ -105,7 +105,7 @@ void Cruise_ship::set_destination_position_and_speed(Point destination_position,
 		cruise_state = CRUISING;
 		next_destination = cruise_start;
 		Ship::set_destination_position_and_speed(destination_position, speed);
-		cout << get_name() << " will visit " << std::flush << next_destination->get_name() << endl; //todo: correct?
+		cout << get_name() << " will visit " << next_destination->get_name() << endl;
 		cout << get_name() << " cruise will start and end at " << 
 						cruise_start->get_name() << endl;	
 	} catch (Error& e) {

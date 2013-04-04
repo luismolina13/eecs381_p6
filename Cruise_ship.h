@@ -8,7 +8,7 @@
 enum CruiseState_e {NO_CRUISE_DESTINATIONS, CRUISE_DOCKED, REFUEL, 
 												SIGHTSEE, CRUISING};
 
-class Island; //todo: necessary?
+class Island; 
 
 class Cruise_ship : public Ship {
 
