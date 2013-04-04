@@ -32,39 +32,60 @@ You should delete this comment.
 #include <string>
 #include <map>
 #include "Geometry.h"
+#include "Utility.h"
+#include <memory>
+#include <vector>
+#include "Ship.h"
 
 class View {
 public:
+	/*	give the view the name of the object to be updated, derived
+		view classes will determine how to use the name to gather
+		the relevant information from model	to show in draw()	*/
+	virtual void update(const std::string& name) = 0;
+
+	/*	remove the item 'name' from this view	*/
+	virtual void update_remove(const std::string& name) = 0;
+
+	/*	print the view information	*/
+	virtual void draw() = 0;
+
+	/*	clear the view information	*/
+	virtual void clear() = 0;
+};
+
+class Map_view : public View {
+public:
 	// default constructor sets the default size, scale, and origin, outputs constructor message
-	View(); 
-	~View();	// outputs destructor message
+	Map_view(); 
+	~Map_view();	// outputs destructor message
 	
 	// Save the supplied name and location for future use in a draw() call
 	// If the name is already present,the new location replaces the previous one.
-	void update_location(const std::string& name, Point location);
+	virtual void update(const std::string& name) override;
 	
 	// Remove the name and its location; no error if the name is not present.
-	void update_remove(const std::string& name);
+	virtual void update_remove(const std::string& name) override;
 	
 	// prints out the current map
-	void draw();
+	virtual void draw() override;
 	
 	// Discard the saved information - drawing will show only a empty pattern
-	void clear(); 
+	virtual void clear() override; 
 	
 	// modify the display parameters
 	// if the size is out of bounds will throw Error("New map size is too big!")
 	// or Error("New map size is too small!")
-	void set_size(int size_);
+	virtual void set_size(int size_);
 	
 	// If scale is not postive, will throw Error("New map scale must be positive!");
-	void set_scale(double scale_);
+	virtual void set_scale(double scale_);
 	
 	// any values are legal for the origin
-	void set_origin(Point origin_);
+	virtual void set_origin(Point origin_);
 	
 	// set the parameters to the default values
-	void set_defaults();
+	virtual void set_defaults();
 				
 private:
 	int size;			// current size of the display
@@ -77,6 +98,49 @@ private:
 	// Return true if the location is within the map, false if not
 	bool get_subscripts(int &ix, int &iy, Point location); 
 
+};
+
+class Data_view : public View {
+public:
+
+	/*	get new data from the model	*/
+	virtual void update(const std::string& name) override;
+
+	/*	inform view that the ship is gone	*/
+	virtual void update_remove(const std::string& name) override;
+	
+	/*	print the sailing data 	*/
+	virtual void draw() override;
+
+	/*	discard all ships from the sailing data	*/
+	virtual void clear() override; 
+
+private:
+	std::map<std::string, ShipData> ships;
+};
+
+class Bridge_view : public View {
+public:
+	Bridge_view(std::shared_ptr<Ship> ownship_) : View(), ownship(ownship_) {}
+
+	/*	get new data from the model	*/
+	virtual void update(const std::string& name) override;
+
+	/*	inform view that the ship is gone	*/
+	virtual void update_remove(const std::string& name) override;
+	
+	/*	print the sailing data 	*/
+	virtual void draw() override;
+
+	/*	discard all ships from the sailing data	*/
+	virtual void clear() override; 
+
+private:
+	std::shared_ptr<Ship> ownship;
+	std::map<std::string, Point> locations;
+
+	void draw_matrix(std::vector<std::vector<std::string>> &matrix);
+	int get_coordinates_from_bearing(double bearing);
 };
 
 #endif

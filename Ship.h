@@ -27,6 +27,7 @@ You should delete this comment.
 
 #include "Sim_object.h"
 #include "Track_base.h"
+#include "Utility.h"
 #include <memory>
 
 class Island;
@@ -71,6 +72,10 @@ public:
 	void describe() const override;
 	
 	void broadcast_current_state() override;
+
+	ShipData get_ship_data();
+
+	double get_ship_course() { return trackBase.get_course(); }
 	
 	/*** Command functions ***/
 	// Start moving to a destination position at a speed

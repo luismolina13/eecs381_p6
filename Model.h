@@ -23,6 +23,7 @@ You should delete this comment.
 #define MODEL_H
 
 #include "Ship_factory.h"
+#include "Utility.h"
 #include <string>
 #include <map>
 #include <set>
@@ -64,6 +65,11 @@ public:
 	void add_ship(std::shared_ptr<Ship>);
 	// will throw Error("Ship not found!") if no ship of that name
 	std::shared_ptr<Ship> get_ship_ptr(const std::string& name) const;
+	/*	find and return a sim_object pointer by name, will throw 
+		Error("Sim_object not found!") if not object of that name,
+		but this should only be called from functions within the program
+		so no user input is being processed */
+	std::shared_ptr<Sim_object> get_object_ptr(const std::string& name) const;
 	
 	// tell all objects to describe themselves
 	void describe() const;
@@ -84,9 +90,11 @@ public:
 	void detach(std::shared_ptr<View>);
 	
     // notify the views about an object's location
-	void notify_location(const std::string& name, Point location);
+	void notify_location(const std::string& name);
 	// notify the views that an object is now gone
 	void notify_gone(const std::string& name);
+
+	ShipData get_data_from_ship(const std::string& name);
 
 	/* services for island information */
 	// given a position, return a pointer to the island at that point

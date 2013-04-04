@@ -21,6 +21,7 @@ class View;
 class Ship;
 class Island;
 class Point;
+struct Views_container;
 
 class Controller {
 public:	
@@ -33,24 +34,31 @@ public:
 	void run();
 
 private:
-	void doViewDefault(View &main_view);
-	void doViewSize(View &main_view);
-	void doViewZoom(View &main_view);
-	void doViewPan(View &main_view);
-	void doViewShow(View &main_view);
-	void doModelStatus(View &main_view);
-	void doModelGo(View &main_view);
-	void doModelCreate(View &main_view);
-	void doShipCourse(View &main_view);
-	void doShipPosition(View &main_view);
-	void doShipDestination(View &main_view);
-	void doShipLoadAt(View &main_view);
-	void doShipUnloadAt(View &main_view);
-	void doShipDockAt(View &main_view);
-	void doShipAttack(View &main_view);
-	void doShipRefuel(View &main_view);
-	void doShipStop(View &main_view);
-	void doShipStopAttack(View &main_view);
+	void doViewDefault(Views_container &views);
+	void doViewSize(Views_container &views);
+	void doViewZoom(Views_container &views);
+	void doViewPan(Views_container &views);
+	void doViewShow(Views_container &views);
+	void doModelStatus(Views_container &views);
+	void doModelGo(Views_container &views);
+	void doModelCreate(Views_container &views);
+	void doShipCourse(Views_container &views);
+	void doShipPosition(Views_container &views);
+	void doShipDestination(Views_container &views);
+	void doShipLoadAt(Views_container &views);
+	void doShipUnloadAt(Views_container &views);
+	void doShipDockAt(Views_container &views);
+	void doShipAttack(Views_container &views);
+	void doShipRefuel(Views_container &views);
+	void doShipStop(Views_container &views);
+	void doShipStopAttack(Views_container &views);
+	void doOpenMap(Views_container &views);
+	void doCloseMap(Views_container& views);
+	void doOpenSailing(Views_container &views);
+	void doCloseSailing(Views_container& views);
+	void doOpenBridge(Views_container &views);
+	void doCloseBridge(Views_container& views);	
+
 	double getDouble();
 	Point getCoords();
 	std::string getName();

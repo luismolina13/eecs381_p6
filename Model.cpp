@@ -115,6 +115,15 @@ shared_ptr<Ship> Model::get_ship_ptr(const std::string& name) const {
 	return (*it).second;
 }
 
+shared_ptr<Sim_object> Model::get_object_ptr(const std::string& name) const {
+	map<string, shared_ptr<Sim_object>>::const_iterator it = sim_objects.find(name);
+	if(it == sim_objects.end()) {
+		throw Error("Sim_object not found!");
+	}
+
+	return (*it).second;
+}
+
 void Model::describe() const {
 	for(auto cur: sim_objects) {
 		cur.second->describe();
@@ -155,9 +164,9 @@ void Model::detach(shared_ptr<View> remove_view) {
 	views.erase(remove_view);
 }
 
-void Model::notify_location(const std::string& name, Point location) {
+void Model::notify_location(const std::string& name) {
 	for(auto cur: views) {
-		cur->update_location(name, location);		
+		cur->update(name);		
 	}
 }
 
@@ -165,6 +174,10 @@ void Model::notify_gone(const std::string& name) {
 	for(auto cur: views) {
 		cur->update_remove(name);			
 	}
+}
+
+ShipData Model::get_data_from_ship(const string& name) {
+	return get_ship_ptr(name)->get_ship_data();
 }
 
 std::shared_ptr<Island> Model::getIslandFromPosition(Point location) {

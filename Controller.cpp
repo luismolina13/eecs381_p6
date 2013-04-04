@@ -9,12 +9,21 @@
 #include <map>
 #include <utility>
 #include <string>
+#include <memory>
 using std::cout; using std::endl; using std::cin;
 using std::string;
 using std::map;
-using std::shared_ptr;
+using std::shared_ptr; using std::make_shared;
 
-typedef map<string, void(Controller::*)(View&)> fn_map;
+typedef map<string, shared_ptr<Bridge_view>> bridge_view_map_t;
+
+struct Views_container {
+	shared_ptr<Map_view> map_view;
+	shared_ptr<Data_view> data_view;
+	bridge_view_map_t bridge_views;
+};
+
+typedef map<string, void(Controller::*)(Views_container&)> fn_map;
 
 Controller::Controller() {
 	//cout << "Controller constructed" << endl;
@@ -26,8 +35,9 @@ Controller::~Controller() {
 
 void Controller::run() {
 	fn_map fMap;
-	shared_ptr<View> main_view(new View);
-	Model::getInstance().attach(main_view);
+	Views_container views;
+	views.map_view = nullptr;
+	views.data_view = nullptr;
 
 	fMap.insert(fn_map::value_type("default", &Controller::doViewDefault));
 	fMap.insert(fn_map::value_type("size", &Controller::doViewSize));
@@ -47,6 +57,12 @@ void Controller::run() {
 	fMap.insert(fn_map::value_type("refuel", &Controller::doShipRefuel));
 	fMap.insert(fn_map::value_type("stop", &Controller::doShipStop));
 	fMap.insert(fn_map::value_type("stop_attack", &Controller::doShipStopAttack));
+	fMap.insert(fn_map::value_type("open_map_view", &Controller::doOpenMap));
+	fMap.insert(fn_map::value_type("close_map_view", &Controller::doCloseMap));
+	fMap.insert(fn_map::value_type("open_sailing_view", &Controller::doOpenSailing));
+	fMap.insert(fn_map::value_type("close_sailing_view", &Controller::doCloseSailing));
+	fMap.insert(fn_map::value_type("open_bridge_view", &Controller::doOpenBridge));
+	fMap.insert(fn_map::value_type("close_bridge_view", &Controller::doCloseBridge));
 
 	while(true) {
 		try{
@@ -69,7 +85,7 @@ void Controller::run() {
 			}
 
 			if(it != fMap.end()) {
-				(this->*(it->second))(*main_view);
+				(this->*(it->second))(views);
 			} else {
 				throw Error("Unrecognized command!");
 			}
@@ -81,26 +97,25 @@ void Controller::run() {
 		}
 	}
 
-	Model::getInstance().detach(main_view);
 	cout << "Done" << endl;
 }
 
-void Controller::doViewDefault(View &main_view) {
-	main_view.set_defaults();
+void Controller::doViewDefault(Views_container &views) {
+	views.map_view->set_defaults();
 }
 
-void Controller::doViewSize(View &main_view) {
+void Controller::doViewSize(Views_container &views) {
 	int size;
 	cin >> size;
 	if(!cin) {
 		throw Error("Expected an integer!");
 	}
-	main_view.set_size(size);
+	views.map_view->set_size(size);
 }
 
-void Controller::doViewZoom(View &main_view) {
+void Controller::doViewZoom(Views_container &views) {
 	double zoom = getDouble();
-	main_view.set_scale(zoom);
+	views.map_view->set_scale(zoom);
 }
 
 double Controller::getDouble() {
@@ -112,8 +127,8 @@ double Controller::getDouble() {
 	return input;
 }
 
-void Controller::doViewPan(View &main_view) {
-	main_view.set_origin(getCoords());
+void Controller::doViewPan(Views_container &views) {
+	views.map_view->set_origin(getCoords());
 }
 
 Point Controller::getCoords() {
@@ -122,19 +137,27 @@ Point Controller::getCoords() {
 	return Point(x, y);
 }
 
-void Controller::doViewShow(View &main_view) {
-	main_view.draw();
+void Controller::doViewShow(Views_container &views) {
+	if(views.map_view) {
+		views.map_view->draw();
+	}
+	if(views.data_view) {
+		views.data_view->draw();
+	}
+	for(auto cur: views.bridge_views) {
+		cur.second->draw();
+	}
 }
 
-void Controller::doModelStatus(View &main_view) {
+void Controller::doModelStatus(Views_container &views) {
 	Model::getInstance().describe();
 }
 
-void Controller::doModelGo(View &main_view) {
+void Controller::doModelGo(Views_container &views) {
 	Model::getInstance().update();
 }
 
-void Controller::doModelCreate(View &main_view) {
+void Controller::doModelCreate(Views_container &views) {
 	string name;
 	cin >> name;
 	if(name.size() < 2) {
@@ -163,7 +186,7 @@ string Controller::getName() {
 	return name;
 }
 
-void Controller::doShipCourse(View &main_view) {
+void Controller::doShipCourse(Views_container &views) {
 	double heading = getDouble();
 
 	if(heading < 0 || heading >= 360) {
@@ -181,13 +204,13 @@ double Controller::getSpeed() {
 	return speed;
 }
 
-void Controller::doShipPosition(View &main_view) {
+void Controller::doShipPosition(Views_container &views) {
 	Point dest = getCoords();
 	double speed = getSpeed();
 	current_ship->set_destination_position_and_speed(dest, speed);
 }
 
-void Controller::doShipDestination(View &main_view) {
+void Controller::doShipDestination(Views_container &views) {
 	shared_ptr<Island> destIsland = getIsland();
 	double speed = getSpeed();
 	//get island pointer and retrieve location, set destination to location
@@ -201,19 +224,19 @@ shared_ptr<Island> Controller::getIsland() {
 	return Model::getInstance().get_island_ptr(islandName);
 }
 
-void Controller::doShipLoadAt(View &main_view) {
+void Controller::doShipLoadAt(Views_container &views) {
 	current_ship->set_load_destination(getIsland());
 }
 
-void Controller::doShipUnloadAt(View &main_view) {
+void Controller::doShipUnloadAt(Views_container &views) {
 	current_ship->set_unload_destination(getIsland());
 }
 
-void Controller::doShipDockAt(View &main_view) {
+void Controller::doShipDockAt(Views_container &views) {
 	current_ship->dock(getIsland());
 }
 
-void Controller::doShipAttack(View &main_view) {
+void Controller::doShipAttack(Views_container &views) {
 	current_ship->attack(getShip());
 }
 
@@ -223,14 +246,69 @@ shared_ptr<Ship> Controller::getShip() {
 	return Model::getInstance().get_ship_ptr(shipName);
 }
 
-void Controller::doShipRefuel(View &main_view) {
+void Controller::doShipRefuel(Views_container &views) {
 	current_ship->refuel();
 }
 
-void Controller::doShipStop(View &main_view) {
+void Controller::doShipStop(Views_container &views) {
 	current_ship->stop();
 }
 
-void Controller::doShipStopAttack(View &main_view) {
+void Controller::doShipStopAttack(Views_container &views) {
 	current_ship->stop_attack();
+}
+
+void Controller::doOpenMap(Views_container &views) {
+	if(views.map_view != nullptr) {
+		throw Error("Map view is already open!");
+	}
+	views.map_view = make_shared<Map_view>();
+	Model::getInstance().attach(views.map_view);
+}
+
+void Controller::doCloseMap(Views_container& views) {
+	if(views.map_view == nullptr) {
+		throw Error("Map view is not open!");
+	}
+	Model::getInstance().detach(views.map_view);
+	views.map_view = nullptr;
+
+}
+
+void Controller::doOpenSailing(Views_container &views) {
+	if(views.data_view != nullptr) {
+		throw Error("Sailing data view is already open!");
+	}
+	views.data_view = make_shared<Data_view>();
+	Model::getInstance().attach(views.data_view);
+}
+
+void Controller::doCloseSailing(Views_container& views) {
+	if(views.data_view == nullptr) {
+		throw Error("Sailing data view is not open!");
+	}
+	Model::getInstance().detach(views.data_view);
+	views.data_view = nullptr;
+}
+
+void Controller::doOpenBridge(Views_container &views) {
+	shared_ptr<Ship> ship = getShip();
+	string name = ship->get_name();
+	if(views.bridge_views.find(name) != views.bridge_views.end()) {
+		throw Error("Bridge view is already open for that ship!");
+	}
+	shared_ptr<Bridge_view> new_view = make_shared<Bridge_view>(ship);
+	views.bridge_views.insert(bridge_view_map_t::value_type(name, new_view));
+	Model::getInstance().attach(new_view);
+}
+
+void Controller::doCloseBridge(Views_container& views) {
+	string name;
+	cin >> name;
+	bridge_view_map_t::iterator it = views.bridge_views.find(name);
+	if(it == views.bridge_views.end()) {
+		throw Error("Bridge view for that ship is not open!");
+	}
+	Model::getInstance().detach(it->second);
+	views.bridge_views.erase(name);
 }
