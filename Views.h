@@ -42,7 +42,7 @@ public:
 	/*	give the view the name of the object to be updated, derived
 		view classes will determine how to use the name to gather
 		the relevant information from model	to show in draw()	*/
-	virtual void update(const std::string& name) = 0;
+	virtual void update(const std::string& name, Point location, ShipData sd) = 0;
 
 	/*	remove the item 'name' from this view	*/
 	virtual void update_remove(const std::string& name) = 0;
@@ -62,7 +62,7 @@ public:
 	
 	// Save the supplied name and location for future use in a draw() call
 	// If the name is already present,the new location replaces the previous one.
-	virtual void update(const std::string& name) override;
+	virtual void update(const std::string& name, Point location, ShipData sd) override;
 	
 	// Remove the name and its location; no error if the name is not present.
 	virtual void update_remove(const std::string& name) override;
@@ -104,7 +104,7 @@ class Data_view : public View {
 public:
 
 	/*	get new data from the model	*/
-	virtual void update(const std::string& name) override;
+	virtual void update(const std::string& name, Point location, ShipData sd) override;
 
 	/*	inform view that the ship is gone	*/
 	virtual void update_remove(const std::string& name) override;
@@ -124,7 +124,7 @@ public:
 	Bridge_view(std::shared_ptr<Ship> ownship_) : View(), ownship(ownship_) {}
 
 	/*	get new data from the model	*/
-	virtual void update(const std::string& name) override;
+	virtual void update(const std::string& name, Point location, ShipData sd) override;
 
 	/*	inform view that the ship is gone	*/
 	virtual void update_remove(const std::string& name) override;

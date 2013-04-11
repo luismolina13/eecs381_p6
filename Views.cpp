@@ -1,6 +1,5 @@
 #include "Views.h"
 #include "Utility.h"
-#include "Sim_object.h"
 #include "Model.h"
 #include "Ship.h"
 #include <iostream>
@@ -33,12 +32,11 @@ Map_view::~Map_view() {
 	//cout << "View destructed" << endl;
 }
 
-void Map_view::update(const std::string& name) {
+void Map_view::update(const std::string& name, Point location, ShipData sd) {
 	/*	If locations contains an item at 'name', the reference to its
 		mapped value is updated. Otherwise, an item is inserted and 
 		its mapped value is set to its location; */
-	shared_ptr<Sim_object> obj = Model::getInstance().get_object_ptr(name);
-	locations[name] = obj->get_location();
+	locations[name] = location;
 }
 
 void Map_view::update_remove(const std::string& name) {
@@ -183,13 +181,11 @@ bool Map_view::get_subscripts(int &ix, int &iy, Point location)
 
 /*---------------------------- DATA VIEW CLASS ----------------------------*/
 
-void Data_view::update(const std::string& name) {
-	try{
-		ShipData sd = Model::getInstance().get_data_from_ship(name);
+void Data_view::update(const std::string& name, Point location, ShipData sd) {
+	//only accept updates from ships for this view
+	if(Model::getInstance().is_ship_present(name)) {
 		ships[name] = sd;
-	} catch(Error& e) {
-		//update by island, no action needed for data view
-	}
+	} 
 }
 
 void Data_view::update_remove(const std::string& name) {
@@ -197,18 +193,12 @@ void Data_view::update_remove(const std::string& name) {
 }
 
 void Data_view::draw() {
-	double not_moving_speed = 0;
 	cout << "----- Sailing Data -----" << endl;
 	cout << setw(10) << "Ship" << setw(10) << "Fuel" << setw(10) << "Course" 
 		<< setw(10) << "Speed" << endl;
 	for(auto cur: ships) {
 		cout << setw(10) << cur.first << setw(10) << cur.second.fuel << setw(10) <<  
 			cur.second.course << setw(10) << cur.second.speed << endl;
-		//if(Model::getInstance().get_ship_ptr(cur.first)->is_moving()) {
-		//	cout << setw(10) << cur.second.speed << endl;
-		//} else {
-		//	cout << setw(10) << not_moving_speed << endl;
-		//}
 	}
 }
 
@@ -221,9 +211,8 @@ void Data_view::clear()  {
 const int bridge_height = 3;
 const int bridge_width = 19;
 
-void Bridge_view::update(const std::string& name) {
-	shared_ptr<Sim_object> obj = Model::getInstance().get_object_ptr(name);
-	locations[name] = obj->get_location();
+void Bridge_view::update(const std::string& name, Point location, ShipData sd) {
+	locations[name] = location;
 }
 
 void Bridge_view::update_remove(const std::string& name) {

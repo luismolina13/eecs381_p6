@@ -89,7 +89,7 @@ void Ship::update() {
 		if(ship_state == MOVING_ON_COURSE || ship_state == MOVING_TO_POSITION) {
 			calculate_movement();
 			cout << get_name() << " now at " << get_location() << endl;
-			Model::getInstance().notify_location(get_name());
+			broadcast_current_state();
 		} else if (ship_state == STOPPED) {
 			cout << get_name() << " stopped at " << get_location() << endl;
 		} else if (ship_state == DOCKED) {
@@ -126,7 +126,7 @@ void Ship::describe() const {
 }
 
 void Ship::broadcast_current_state() {
-	Model::getInstance().notify_location(get_name());
+	Model::getInstance().notify_location(get_name(), get_location(), get_ship_data());
 }
 
 ShipData Ship::get_ship_data() {
@@ -144,6 +144,7 @@ void Ship::set_destination_position_and_speed(Point destination_position, double
 	cout << get_name() << " will sail on " << trackBase.get_course_speed() 
 		<< " to " << destination << endl;
 	ship_state = MOVING_TO_POSITION;
+	broadcast_current_state();
 }
 
 void Ship::set_course_and_speed(double course, double speed) {
@@ -153,6 +154,7 @@ void Ship::set_course_and_speed(double course, double speed) {
 
 	cout << get_name() << " will sail on " << trackBase.get_course_speed() << endl;
 	ship_state = MOVING_ON_COURSE;
+	broadcast_current_state();
 }
 
 void Ship::setDestAndCourseChecks(double speed) {
@@ -180,7 +182,7 @@ void Ship::dock(shared_ptr<Island> island_ptr) {
 	trackBase.set_position(island_ptr->get_location());
 	docked_island = island_ptr;
 	ship_state = DOCKED;
-	Model::getInstance().notify_location(get_name());
+	broadcast_current_state();
 	cout << get_name() << " docked at " << island_ptr->get_name() << endl;
 }
 
@@ -197,7 +199,7 @@ void Ship::refuel() {
 		fuel += refuel_amount;
 		cout << get_name() << " now has " << fuel << " tons of fuel" << endl;
 	}
-
+	broadcast_current_state();
 }
 
 void Ship::set_load_destination(shared_ptr<Island>) {

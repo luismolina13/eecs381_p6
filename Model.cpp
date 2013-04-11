@@ -164,9 +164,9 @@ void Model::detach(shared_ptr<View> remove_view) {
 	views.erase(remove_view);
 }
 
-void Model::notify_location(const std::string& name) {
+void Model::notify_location(const std::string& name, Point location, ShipData sd) {
 	for(auto cur: views) {
-		cur->update(name);		
+		cur->update(name, location, sd);	
 	}
 }
 
