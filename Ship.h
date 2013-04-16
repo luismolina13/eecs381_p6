@@ -72,10 +72,6 @@ public:
 	void describe() const override;
 	
 	void broadcast_current_state() override;
-
-	ShipData get_ship_data();
-
-	double get_ship_course() { return trackBase.get_course(); }
 	
 	/*** Command functions ***/
 	// Start moving to a destination position at a speed

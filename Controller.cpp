@@ -9,15 +9,16 @@
 #include <map>
 #include <utility>
 #include <vector>
+#include <list>
 #include <string>
 #include <memory>
 using std::cout; using std::endl; using std::cin;
 using std::string;
-using std::map; using std::vector; using std::pair;
+using std::map; using std::vector; using std::pair; using std::list;
 using std::shared_ptr; using std::make_shared;
 
 typedef map<string, shared_ptr<Bridge_view>> bridge_view_map_t;
-typedef vector<shared_ptr<View>> views_list_t;
+typedef list<shared_ptr<View>> views_list_t;
 
 struct Views_container {
 	shared_ptr<Map_view> map_view;
@@ -77,7 +78,9 @@ void Controller::run() {
 			fn_map::iterator it = fMap.end();
 			if(first_word == "quit") {
 				break;
-			} else if (Model::getInstance().is_ship_present(first_word)) {
+			} 
+
+			if (Model::getInstance().is_ship_present(first_word)) {
 				//the first word was a ship name, so use the second word
 				current_ship = Model::getInstance().get_ship_ptr(first_word);
 				string second_word;
@@ -87,11 +90,11 @@ void Controller::run() {
 				it = fMap.find(first_word);
 			}
 
-			if(it != fMap.end()) {
-				(this->*(it->second))(views);
-			} else {
+			if(it == fMap.end()) {
 				throw Error("Unrecognized command!");
-			}
+			} 
+
+			(this->*(it->second))(views);
 		} catch (Error& e) {
 			cout << e.msg << endl;
 			// clear input stream and rest of line
@@ -281,8 +284,8 @@ void Controller::doCloseMap(Views_container& views) {
 		throw Error("Map view is not open!");
 	}
 	Model::getInstance().detach(views.map_view);
+	views.views_list.remove(views.map_view);
 	views.map_view = nullptr;
-	removeFromViewsList(views.map_view, views);
 }
 
 void Controller::doOpenSailing(Views_container &views) {
@@ -299,8 +302,8 @@ void Controller::doCloseSailing(Views_container& views) {
 		throw Error("Sailing data view is not open!");
 	}
 	Model::getInstance().detach(views.data_view);
+	views.views_list.remove(views.data_view);
 	views.data_view = nullptr;
-	removeFromViewsList(views.data_view, views);
 }
 
 void Controller::doOpenBridge(Views_container &views) {
@@ -309,7 +312,7 @@ void Controller::doOpenBridge(Views_container &views) {
 	if(views.bridge_views.find(name) != views.bridge_views.end()) {
 		throw Error("Bridge view is already open for that ship!");
 	}
-	shared_ptr<Bridge_view> new_view = make_shared<Bridge_view>(ship);
+	shared_ptr<Bridge_view> new_view = make_shared<Bridge_view>(ship->get_name());
 	views.bridge_views.insert(bridge_view_map_t::value_type(name, new_view));
 	Model::getInstance().attach(new_view);
 	views.views_list.push_back(new_view);
@@ -323,16 +326,6 @@ void Controller::doCloseBridge(Views_container& views) {
 		throw Error("Bridge view for that ship is not open!");
 	}
 	Model::getInstance().detach(it->second);
-	removeFromViewsList(views.bridge_views.find(name)->second, views);
+	views.views_list.remove(views.bridge_views.find(name)->second);
 	views.bridge_views.erase(name);
-}
-
-void Controller::removeFromViewsList(shared_ptr<View> del, Views_container& views) {
-	for(views_list_t::iterator it = views.views_list.begin(); it != views.views_list.end(); it++) {
-		if(*it == del) {
-			views.views_list.erase(it);
-			return;
-		}
-	}
-	throw Error("Given view not found in views list");
 }

@@ -8,10 +8,7 @@ struct Error {
 
 /* add any of your own declarations here */
 
-struct ShipData {
-	double fuel;
-	double course;
-	double speed;
-};
-
 #endif
+
+//todo: check throws
+//todo: ask about two command maps

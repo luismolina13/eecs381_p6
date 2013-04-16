@@ -90,11 +90,19 @@ public:
 	void detach(std::shared_ptr<View>);
 	
     // notify the views about an object's location
-	void notify_location(const std::string& name, Point location, ShipData sd);
+	void notify_location(const std::string& name, Point location);
+
+	// notify the views about an object's course
+	void notify_course(const std::string& name, double course);
+
+	// notify the views about an object's speed
+	void notify_speed(const std::string& name, double speed);
+
+	// notify the views about an object's course
+	void notify_fuel(const std::string& name, double fuel);
+
 	// notify the views that an object is now gone
 	void notify_gone(const std::string& name);
-
-	ShipData get_data_from_ship(const std::string& name);
 
 	/* services for island information */
 	// given a position, return a pointer to the island at that point

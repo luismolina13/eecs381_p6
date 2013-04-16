@@ -86,17 +86,16 @@ void Ship::update() {
 	} 
 
 	if(is_afloat()) { 
-		if(ship_state == MOVING_ON_COURSE || ship_state == MOVING_TO_POSITION) {
+		if(is_moving()) {
 			calculate_movement();
 			cout << get_name() << " now at " << get_location() << endl;
-			broadcast_current_state();
+			Model::getInstance().notify_location(get_name(), get_location());
 		} else if (ship_state == STOPPED) {
 			cout << get_name() << " stopped at " << get_location() << endl;
-		} else if (ship_state == DOCKED) {
+		} else if (is_docked()) {
 			cout << get_name() << " docked at " << docked_island->get_name() << endl;
 		} else if (ship_state == DEAD_IN_THE_WATER) {
 			cout << get_name() << " dead in the water at " << get_location() << endl;
-			broadcast_current_state();
 		}
 	}
 }
@@ -126,12 +125,10 @@ void Ship::describe() const {
 }
 
 void Ship::broadcast_current_state() {
-	Model::getInstance().notify_location(get_name(), get_location(), get_ship_data());
-}
-
-ShipData Ship::get_ship_data() {
-	ShipData sd = {fuel, trackBase.get_course(),trackBase.get_speed()};
-	return sd;
+	Model::getInstance().notify_location(get_name(), get_location());
+	Model::getInstance().notify_course(get_name(), trackBase.get_course());
+	Model::getInstance().notify_speed(get_name(), trackBase.get_speed());
+	Model::getInstance().notify_fuel(get_name(), fuel);
 }
 
 void Ship::set_destination_position_and_speed(Point destination_position, double speed) {
@@ -160,7 +157,7 @@ void Ship::set_course_and_speed(double course, double speed) {
 void Ship::setDestAndCourseChecks(double speed) {
 	if(!can_move())
 		throw Error("Ship cannot move!");
-	else if (speed > maximum_speed)
+	if (speed > maximum_speed)
 		throw Error("Ship cannot go that fast!");
 }
 
@@ -171,7 +168,7 @@ void Ship::stop() {
 	trackBase.set_speed(0);
 	ship_state = STOPPED;
 	cout << get_name() << " stopping at " << get_location() << endl;
-	broadcast_current_state();
+	Model::getInstance().notify_speed(get_name(), trackBase.get_speed());
 }
 
 void Ship::dock(shared_ptr<Island> island_ptr) {
@@ -199,7 +196,7 @@ void Ship::refuel() {
 		fuel += refuel_amount;
 		cout << get_name() << " now has " << fuel << " tons of fuel" << endl;
 	}
-	broadcast_current_state();
+	Model::getInstance().notify_fuel(get_name(), fuel);
 }
 
 void Ship::set_load_destination(shared_ptr<Island>) {
@@ -273,7 +270,8 @@ void Ship::calculate_movement()
 		fuel -= fuel_required;
 		trackBase.set_speed(0.);
 		ship_state = STOPPED;
-		broadcast_current_state();
+		Model::getInstance().notify_speed(get_name(), trackBase.get_speed());
+		Model::getInstance().notify_fuel(get_name(), fuel);
 		}
 	else {
 		// go as far as we can, stay in the same movement state
@@ -283,11 +281,13 @@ void Ship::calculate_movement()
 		if(full_fuel_required >= fuel) {
 			fuel = 0.0;
 			ship_state = DEAD_IN_THE_WATER;
-			broadcast_current_state();
+			Model::getInstance().notify_course(get_name(), trackBase.get_course());
+			Model::getInstance().notify_speed(get_name(), trackBase.get_speed());
 			}
 		else {
 			fuel -= full_fuel_required;
 			}
+		Model::getInstance().notify_fuel(get_name(), fuel);
 		}
 }
 

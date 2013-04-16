@@ -164,20 +164,35 @@ void Model::detach(shared_ptr<View> remove_view) {
 	views.erase(remove_view);
 }
 
-void Model::notify_location(const std::string& name, Point location, ShipData sd) {
+void Model::notify_location(const std::string& name, Point location) {
 	for(auto cur: views) {
-		cur->update(name, location, sd);	
+		cur->update_location(name, location);	
 	}
 }
+
+void Model::notify_course(const std::string& name, double course) {
+	for(auto cur: views) {
+		cur->update_course(name, course);	
+	}
+}
+
+void Model::notify_speed(const std::string& name, double speed) {
+	for(auto cur: views) {
+		cur->update_speed(name, speed);	
+	}
+}
+
+void Model::notify_fuel(const std::string& name, double fuel) {
+	for(auto cur: views) {
+		cur->update_fuel(name, fuel);	
+	}
+}
+
 
 void Model::notify_gone(const std::string& name) {
 	for(auto cur: views) {
 		cur->update_remove(name);			
 	}
-}
-
-ShipData Model::get_data_from_ship(const string& name) {
-	return get_ship_ptr(name)->get_ship_data();
 }
 
 std::shared_ptr<Island> Model::getIslandFromPosition(Point location) {

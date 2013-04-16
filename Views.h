@@ -35,23 +35,37 @@ You should delete this comment.
 #include "Utility.h"
 #include <memory>
 #include <vector>
-#include "Ship.h"
+
+struct ShipData {
+	double fuel;
+	double course;
+	double speed;
+};
 
 class View {
 public:
-	/*	give the view the name of the object to be updated, derived
-		view classes will determine how to use the name to gather
-		the relevant information from model	to show in draw()	*/
-	virtual void update(const std::string& name, Point location, ShipData sd) = 0;
+
+
+	//virtual ~View() = 0; todo: why won't this compile?
+
+	/*	fat interface functions for derived view classes. If called for a view
+		for which they are undefined, nothing hapens */
+	virtual void update_location(const std::string& name, Point location) {};
+
+	virtual void update_course(const std::string& name, double course) {};
+
+	virtual void update_speed(const std::string& name, double speed) {};
+
+	virtual void update_fuel(const std::string& name, double fuel) {};
 
 	/*	remove the item 'name' from this view	*/
-	virtual void update_remove(const std::string& name) = 0;
+	virtual void update_remove(const std::string& name) {};
 
 	/*	print the view information	*/
-	virtual void draw() = 0;
+	virtual void draw() {};
 
 	/*	clear the view information	*/
-	virtual void clear() = 0;
+	virtual void clear() {};
 };
 
 class Map_view : public View {
@@ -62,7 +76,7 @@ public:
 	
 	// Save the supplied name and location for future use in a draw() call
 	// If the name is already present,the new location replaces the previous one.
-	virtual void update(const std::string& name, Point location, ShipData sd) override;
+	virtual void update_location(const std::string& name, Point location) override;
 	
 	// Remove the name and its location; no error if the name is not present.
 	virtual void update_remove(const std::string& name) override;
@@ -104,7 +118,11 @@ class Data_view : public View {
 public:
 
 	/*	get new data from the model	*/
-	virtual void update(const std::string& name, Point location, ShipData sd) override;
+	//virtual void update_location(const std::string& name, Point location, ShipData sd) override;
+
+	virtual void update_course(const std::string& name, double course) override;
+	virtual void update_speed(const std::string& name, double speed) override;
+	virtual void update_fuel(const std::string& name, double fuel) override;
 
 	/*	inform view that the ship is gone	*/
 	virtual void update_remove(const std::string& name) override;
@@ -113,7 +131,7 @@ public:
 	virtual void draw() override;
 
 	/*	discard all ships from the sailing data	*/
-	virtual void clear() override; 
+	//virtual void clear() override; 
 
 private:
 	std::map<std::string, ShipData> ships;
@@ -121,12 +139,15 @@ private:
 
 class Bridge_view : public View {
 public:
-	Bridge_view(std::shared_ptr<Ship> ownship_) : View(), ownship(ownship_) {}
+	Bridge_view(const std::string& ownship_name_) : 
+				View(), ownship_name(ownship_name_), is_ownship_afloat(true){}
 
 	/*	get new data from the model	*/
-	virtual void update(const std::string& name, Point location, ShipData sd) override;
+	virtual void update_location(const std::string& name, Point location) override;
 
-	/*	inform view that the ship is gone	*/
+	virtual void update_course(const std::string& name, double course);
+
+	/*	inform view that the ship is gone (sunk)	*/
 	virtual void update_remove(const std::string& name) override;
 	
 	/*	print the sailing data 	*/
@@ -136,7 +157,10 @@ public:
 	virtual void clear() override; 
 
 private:
-	std::shared_ptr<Ship> ownship;
+	std::string	ownship_name;
+	Point ownship_location;
+	double ownship_course;
+	bool is_ownship_afloat;
 	std::map<std::string, Point> locations;
 
 	void draw_matrix(std::vector<std::vector<std::string>> &matrix);

@@ -32,7 +32,7 @@ Map_view::~Map_view() {
 	//cout << "View destructed" << endl;
 }
 
-void Map_view::update(const std::string& name, Point location, ShipData sd) {
+void Map_view::update_location(const std::string& name, Point location) {
 	/*	If locations contains an item at 'name', the reference to its
 		mapped value is updated. Otherwise, an item is inserted and 
 		its mapped value is set to its location; */
@@ -181,11 +181,38 @@ bool Map_view::get_subscripts(int &ix, int &iy, Point location)
 
 /*---------------------------- DATA VIEW CLASS ----------------------------*/
 
-void Data_view::update(const std::string& name, Point location, ShipData sd) {
+/*void Data_view::update_location(const std::string& name, Point location, ShipData sd) {
 	//only accept updates from ships for this view
 	if(Model::getInstance().is_ship_present(name)) {
 		ships[name] = sd;
 	} 
+}*/
+
+void Data_view::update_course(const std::string& name, double course) {
+	try{
+		ShipData& sd = ships.at(name);
+		sd.course = course;
+	} catch (...) { //this is a new ship
+		ships[name] = ShipData{0, course, 0};
+	}
+}
+
+void Data_view::update_speed(const std::string& name, double speed) {
+	try{
+		ShipData& sd = ships.at(name);
+		sd.speed = speed;
+	} catch (...) { //this is a new ship
+		ships[name] = ShipData{0, 0, speed};
+	}
+}
+
+void Data_view::update_fuel(const std::string& name, double fuel) {
+	try{
+		ShipData& sd = ships.at(name);
+		sd.fuel = fuel;
+	} catch (...) { //this is a new ship
+		ships[name] = ShipData{fuel, 0, 0};
+	}
 }
 
 void Data_view::update_remove(const std::string& name) {
@@ -196,14 +223,12 @@ void Data_view::draw() {
 	cout << "----- Sailing Data -----" << endl;
 	cout << setw(10) << "Ship" << setw(10) << "Fuel" << setw(10) << "Course" 
 		<< setw(10) << "Speed" << endl;
+
+	//print out each ships shipdata
 	for(auto cur: ships) {
 		cout << setw(10) << cur.first << setw(10) << cur.second.fuel << setw(10) <<  
 			cur.second.course << setw(10) << cur.second.speed << endl;
 	}
-}
-
-void Data_view::clear()  {
-	ships.clear();
 }
 
 /*--------------------------- BRIDGE VIEW CLASS ---------------------------*/
@@ -211,31 +236,44 @@ void Data_view::clear()  {
 const int bridge_height = 3;
 const int bridge_width = 19;
 
-void Bridge_view::update(const std::string& name, Point location, ShipData sd) {
+void Bridge_view::update_location(const std::string& name, Point location) {
 	locations[name] = location;
+	if(name == ownship_name) {
+		ownship_location = location;
+	}
+}
+
+void Bridge_view::update_course(const std::string& name, double course) {
+	if(name == ownship_name) {
+		ownship_course = course;
+	}
 }
 
 void Bridge_view::update_remove(const std::string& name) {
+	if(name == ownship_name) {
+		is_ownship_afloat = false;
+	} 
+
 	locations.erase(name);
 }
 
 void Bridge_view::draw() {
-	if(!(ownship->is_afloat())) { //draw water view
-		cout << "Bridge view from " << ownship->get_name() << " sunk at " 
-										<< ownship->get_location() << endl;
+	if(!is_ownship_afloat) { //draw water view
+		cout << "Bridge view from " << ownship_name << " sunk at " 
+										<< ownship_location << endl;
 		vector<vector<string>> matrix(bridge_height, vector<string>(bridge_width, "w-"));
 		draw_matrix(matrix);
 		return;
 	}
-	cout << "Bridge view from " << ownship->get_name() << " position " << 
-		ownship->get_location() << " heading " << ownship->get_ship_course() << endl;
+	cout << "Bridge view from " << ownship_name << " position " << 
+		ownship_location << " heading " << ownship_course << endl;
 	vector<vector<string>> matrix(bridge_height, vector<string>(bridge_width, ". "));
 	
 	for(auto cur: locations) { 
 		//for each location in the list
-		Compass_position cp(ownship->get_location(), cur.second);
+		Compass_position cp(ownship_location, cur.second);
 		if(cp.range < 20 && cp.range > .005) { //if it is in sight
-			int coords = get_coordinates_from_bearing(cp.bearing - ownship->get_ship_course());
+			int coords = get_coordinates_from_bearing(cp.bearing - ownship_course);
 			//if the returned bearing is within our forward field of vision
 			if(coords >= 0 && coords <= 180) {
 				string& point = matrix[2][coords/10];
